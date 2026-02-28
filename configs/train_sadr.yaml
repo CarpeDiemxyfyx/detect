@@ -1,0 +1,67 @@
+# ============================================================
+#  训练配置文件: 仅SADR改进 (消融实验A1)
+#  用法: python scripts/train.py --cfg configs/train_sadr.yaml
+# ============================================================
+
+# ---------- 模型 ----------
+model:
+  yaml: models/yolov11m-sadr.yaml
+  pretrained: yolo11m.pt
+  name: A1_sadr
+  desc: "YOLOv11m + SADR (创新点1)"
+
+# ---------- 数据 ----------
+data:
+  dataset: dataset/road_anomaly.yaml
+  imgsz: 640
+
+# ---------- 训练基本参数 ----------
+train:
+  epochs: 200
+  batch: 4                                  # RTX 4060 (8GB VRAM) 适配
+  device: "0"
+  workers: 4                                # 显存受限时减少workers避免内存溢出
+  amp: true
+  patience: 30
+  save_period: 10
+  cos_lr: true
+  close_mosaic: 10
+  val: true
+  plots: true
+  exist_ok: true
+
+# ---------- 优化器 ----------
+optimizer:
+  type: AdamW
+  lr0: 0.0005                              # √(4/16)×0.001, AdamW小batch缩放
+  lrf: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3
+  warmup_momentum: 0.8
+
+# ---------- 数据增强 ----------
+augment:
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 0.0
+  translate: 0.1
+  scale: 0.5
+  shear: 0.0
+  perspective: 0.001
+  flipud: 0.0
+  fliplr: 0.5
+  mosaic: 1.0
+  mixup: 0.15
+  copy_paste: 0.1
+
+# ---------- 损失函数权重 ----------
+loss:
+  box: 7.5
+  cls: 0.5
+  dfl: 1.5
+
+# ---------- 输出路径 ----------
+output:
+  project: runs/road_anomaly
