@@ -31,6 +31,11 @@ PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+import warnings
+warnings.filterwarnings('ignore', message='.*does not have a deterministic implementation.*')
+
+INFERENCE_DIR = os.path.join(PROJECT_ROOT, 'runs', 'inference')
+
 from models.register_modules import register_custom_modules
 register_custom_modules()
 
@@ -66,7 +71,7 @@ def inference(args):
         source=args.source, conf=args.conf, iou=args.iou,
         imgsz=args.imgsz, device=args.device, save=True,
         save_txt=args.save_txt, save_conf=args.save_txt,
-        stream=True, project='runs/inference',
+        stream=True, project=INFERENCE_DIR,
         name='predict', exist_ok=True,
     )
 
@@ -185,7 +190,7 @@ def video_inference(args):
         all_video_results.append(result_dict)
 
     # 保存 JSON 报告
-    report_path = os.path.join('runs', 'inference', 'video_report.json')
+    report_path = os.path.join(INFERENCE_DIR, 'video_report.json')
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, 'w', encoding='utf-8') as f:
         json.dump(all_video_results, f, ensure_ascii=False, indent=2)

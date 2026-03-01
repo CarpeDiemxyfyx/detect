@@ -28,6 +28,11 @@ PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+import warnings
+warnings.filterwarnings('ignore', message='.*does not have a deterministic implementation.*')
+
+EVALUATE_DIR = os.path.join(PROJECT_ROOT, 'runs', 'evaluate')
+
 from models.register_modules import register_custom_modules
 register_custom_modules()
 
@@ -142,7 +147,7 @@ def evaluate_model(args):
                 iou=0.45,
                 save=True,
                 device=args.device,
-                project='runs/evaluate',
+                project=EVALUATE_DIR,
                 name='visualize',
                 exist_ok=True,
             )

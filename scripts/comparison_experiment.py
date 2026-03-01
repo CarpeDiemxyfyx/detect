@@ -29,6 +29,11 @@ PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+import warnings
+warnings.filterwarnings('ignore', message='.*does not have a deterministic implementation.*')
+
+COMPARISON_DIR = os.path.join(PROJECT_ROOT, 'runs', 'comparison')
+
 from models.register_modules import register_custom_modules
 register_custom_modules()
 
@@ -58,7 +63,7 @@ COMPARISON_MODELS = {
         'desc': 'RT-DETR-l',
     },
     'ours': {
-        'yaml': 'models/yolov11-road-anomaly.yaml',
+        'yaml': 'models/yolov11m-road-anomaly.yaml',
         'weight': 'yolo11m.pt',
         'is_custom': True,
         'desc': 'Ours (Improved YOLOv11m)',
@@ -118,14 +123,14 @@ def run_comparison(args):
                 amp=True,
                 cos_lr=True,
                 close_mosaic=10,
-                project='runs/comparison',
+                project=COMPARISON_DIR,
                 name=model_name,
                 exist_ok=True,
                 plots=True,
             )
             
             # 评估
-            best_path = f"runs/comparison/{model_name}/weights/best.pt"
+            best_path = os.path.join(COMPARISON_DIR, model_name, 'weights', 'best.pt')
             if os.path.exists(best_path):
                 best_model = YOLO(best_path)
                 metrics = best_model.val(
@@ -174,8 +179,8 @@ def run_comparison(args):
             }
     
     # 保存结果
-    os.makedirs('runs/comparison', exist_ok=True)
-    results_file = 'runs/comparison/comparison_results.json'
+    os.makedirs(COMPARISON_DIR, exist_ok=True)
+    results_file = os.path.join(COMPARISON_DIR, 'comparison_results.json')
     with open(results_file, 'w', encoding='utf-8') as f:
         json.dump(results_all, f, indent=2, ensure_ascii=False)
     

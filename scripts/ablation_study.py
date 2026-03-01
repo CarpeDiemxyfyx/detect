@@ -29,6 +29,11 @@ PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+import warnings
+warnings.filterwarnings('ignore', message='.*does not have a deterministic implementation.*')
+
+ABLATION_DIR = os.path.join(PROJECT_ROOT, 'runs', 'ablation')
+
 from models.register_modules import register_custom_modules
 register_custom_modules()
 
@@ -56,13 +61,13 @@ ABLATION_CONFIGS = {
         'sadr': False, 'bdfr': True, 'tvad': False,
     },
     'A3': {
-        'yaml': 'models/yolov11-road-anomaly.yaml',
+        'yaml': 'models/yolov11m-road-anomaly.yaml',
         'name': 'A3_full',
         'desc': 'YOLOv11m + SADR + BDFR',
         'sadr': True, 'bdfr': True, 'tvad': False,
     },
     'A4': {
-        'yaml': 'models/yolov11-road-anomaly.yaml',
+        'yaml': 'models/yolov11m-road-anomaly.yaml',
         'name': 'A4_tvad',
         'desc': 'YOLOv11m + SADR + BDFR + TVAD',
         'sadr': True, 'bdfr': True, 'tvad': True,
@@ -137,14 +142,14 @@ def run_ablation(args):
             close_mosaic=10,
             mosaic=1.0,
             mixup=0.15,
-            project='runs/ablation',
+            project=ABLATION_DIR,
             name=config['name'],
             exist_ok=True,
             plots=True,
         )
         
         # 评估
-        best_path = f"runs/ablation/{config['name']}/weights/best.pt"
+        best_path = os.path.join(ABLATION_DIR, config['name'], 'weights', 'best.pt')
         if os.path.exists(best_path):
             best_model = YOLO(best_path)
             metrics = best_model.val(
@@ -200,8 +205,8 @@ def run_ablation(args):
                     results_all[exp_id]['V_F1'] = 0.0
     
     # 保存结果
-    os.makedirs('runs/ablation', exist_ok=True)
-    results_file = 'runs/ablation/ablation_results.json'
+    os.makedirs(ABLATION_DIR, exist_ok=True)
+    results_file = os.path.join(ABLATION_DIR, 'ablation_results.json')
     with open(results_file, 'w', encoding='utf-8') as f:
         json.dump(results_all, f, indent=2, ensure_ascii=False)
     

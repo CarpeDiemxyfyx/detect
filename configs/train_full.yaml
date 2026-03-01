@@ -5,7 +5,7 @@
 
 # ---------- 模型 ----------
 model:
-  yaml: models/yolov11-road-anomaly.yaml   # 模型结构定义
+  yaml: models/yolov11m-road-anomaly.yaml  # 模型结构定义
   pretrained: yolo11m.pt                    # 预训练权重
   name: yolov11m_improved                   # 实验名称
   desc: "YOLOv11m + SADR + BDFR (完整改进)"

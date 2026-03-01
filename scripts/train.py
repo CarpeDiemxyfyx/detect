@@ -30,6 +30,10 @@ from pathlib import Path
 from copy import deepcopy
 
 import yaml
+import warnings
+
+# 抑制 PyTorch 确定性算法警告 (SADR 的 AdaptiveAvgPool2d 触发, 每epoch重复)
+warnings.filterwarnings('ignore', message='.*does not have a deterministic implementation.*')
 
 # 添加项目根目录到 sys.path
 PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
@@ -54,7 +58,7 @@ CONFIG_SHORTCUTS = {
 # 默认配置 (当配置文件中缺少某项时使用)
 DEFAULT_CFG = {
     'model': {
-        'yaml': 'models/yolov11-road-anomaly.yaml',
+        'yaml': 'models/yolov11m-road-anomaly.yaml',
         'pretrained': 'yolo11m.pt',
         'name': 'yolov11m_improved',
         'desc': 'YOLOv11m + SADR + BDFR (完整改进)',
@@ -338,8 +342,8 @@ def train(cfg: dict):
         'cls':              cfg['loss']['cls'],
         'dfl':              cfg['loss']['dfl'],
 
-        # 输出路径
-        'project':          cfg['output']['project'],
+        # 输出路径 (绝对路径, 避免 Ultralytics runs_dir 嵌套)
+        'project':          str(Path(PROJECT_ROOT) / cfg['output']['project']),
         'name':             cfg['model']['name'],
 
         'save':             True,
@@ -356,7 +360,7 @@ def train(cfg: dict):
     print("  🎯 训练完成! 执行最终评估...")
     print(f"{'='*64}")
 
-    best_pt = Path(cfg['output']['project']) / cfg['model']['name'] / 'weights' / 'best.pt'
+    best_pt = Path(PROJECT_ROOT) / cfg['output']['project'] / cfg['model']['name'] / 'weights' / 'best.pt'
     best_model = YOLO(str(best_pt))
     metrics = best_model.val(
         data=cfg['data']['dataset'],
